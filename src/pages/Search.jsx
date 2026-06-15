@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import DatePicker from "react-datepicker";
 
+
 import "react-datepicker/dist/react-datepicker.css";
 
 import {
@@ -36,6 +37,15 @@ function Search() {
   const [loading, setLoading] =
     useState(false);
 
+   const [previewUrl, setPreviewUrl] =
+    useState("");
+
+const [showPreview, setShowPreview] =
+  useState(false);
+
+const [fileType, setFileType] =
+  useState("");
+
   const getMinorOptions = () => {
 
     if (majorHead === "Personal") {
@@ -50,12 +60,43 @@ function Search() {
   };
 
   const handlePreview = (
+  fileUrl
+) => {
+
+  const extension =
     fileUrl
-    ) => {
-    window.open(
-    fileUrl,
-    "_blank"
-  );
+      .split("?")[0]
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+  const imageTypes = [
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "webp",
+  ];
+
+  if (
+    extension === "pdf"
+  ) {
+    setFileType("pdf");
+  } else if (
+    imageTypes.includes(
+      extension
+    )
+  ) {
+    setFileType("image");
+  } else {
+    setFileType(
+      "unsupported"
+    );
+  }
+
+  setPreviewUrl(fileUrl);
+
+  setShowPreview(true);
 };
 
 const handleDownload = (
@@ -71,6 +112,14 @@ const handleDownload = (
   link.target = "_blank";
 
   link.click();
+};
+const handleDownloadAll = () => {
+  results.forEach((doc) => {
+    window.open(
+      doc.file_url,
+      "_blank"
+    );
+  });
 };
 
   const handleSearch = async (
@@ -322,123 +371,184 @@ const handleDownload = (
   </h4>
 
   <button
-    className="btn btn-success"
-    onClick={() => {
-
-      results.forEach(
-        (doc) => {
-          window.open(
-            doc.file_url,
-            "_blank"
-          );
-        }
-      );
-
-    }}
-  >
-    Download All
-  </button>
+  className="btn btn-success"
+  onClick={handleDownloadAll}
+>
+  Download All
+</button>
 
 </div>
 <div className="table-responsive">
 
     <table className="table table-bordered">
 
-      <thead>
-        <tr>
-          <th>#</th>
-         <thead>
-  <tr>
-    <th>ID</th>
-    <th>Category</th>
-    <th>Sub Category</th>
-    <th>Date</th>
-    <th>Remarks</th>
-    <th>Uploaded By</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-          <th>Actions</th>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>ID</th>
+      <th>Category</th>
+      <th>Sub Category</th>
+      <th>Date</th>
+      <th>Remarks</th>
+      <th>Uploaded By</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    {results.map(
+      (item, index) => (
+        <tr key={index}>
+
+          <td>
+            {index + 1}
+          </td>
+
+          <td>
+            {item.document_id}
+          </td>
+
+          <td>
+            {item.major_head}
+          </td>
+
+          <td>
+            {item.minor_head}
+          </td>
+
+          <td>
+            {new Date(
+              item.document_date
+            ).toLocaleDateString()}
+          </td>
+
+          <td>
+            {item.document_remarks}
+          </td>
+
+          <td>
+            {item.uploaded_by}
+          </td>
+
+          <td>
+
+            <button
+              className="btn btn-primary btn-sm me-2"
+              onClick={() =>
+                handlePreview(
+                  item.file_url
+                )
+              }
+            >
+              Preview
+            </button>
+
+            <button
+              className="btn btn-success btn-sm"
+              onClick={() =>
+                handleDownload(
+                  item.file_url
+                )
+              }
+            >
+              Download
+            </button>
+
+          </td>
+
         </tr>
-      </thead>
+      )
+    )}
 
-      <tbody>
+  </tbody>
 
-        {results.map(
-          (item, index) => (
-            <tr key={index}>
-
-              <td>
-                {index + 1}
-              </td>
-
-              <td>
-                {item.document_id}
-                </td>
-
-                <td>
-                {item.major_head}
-                </td>
-
-                <td>
-                {item.minor_head}
-                </td>
-
-                <td>
-                {
-                    new Date(
-                    item.document_date
-                    ).toLocaleDateString()
-                }
-                </td>
-
-                <td>
-                {item.document_remarks}
-                </td>
-
-                <td>
-                {item.uploaded_by}
-                            </td>
-
-              <td>
-
-                <button
-                  className="btn btn-primary btn-sm me-2"
-                  onClick={() =>
-                  handlePreview(
-                  item.file_url
-                  )
-                }
-                >
-                  Preview
-                </button>
-
-                <button
-                  className="btn btn-success btn-sm"
-                  onClick={() =>
-                  handleDownload(
-                  item.file_url
-                  )
-                }
-                >
-                  Download
-                </button>
-
-              </td>
-
-            </tr>
-          )
-        )}
-
-      </tbody>
-
-    </table>
+</table>
 </div>
   </div>
 )}
         </div>
 
       </div>
+      {showPreview && (
+  <div
+    className="modal d-block"
+    tabIndex="-1"
+    style={{
+      backgroundColor:
+        "rgba(0,0,0,0.5)",
+    }}
+  >
+    <div
+      className="modal-dialog modal-xl"
+    >
+      <div
+        className="modal-content"
+      >
+
+        <div
+          className="modal-header"
+        >
+          <h5
+            className="modal-title"
+          >
+            File Preview
+          </h5>
+
+          <button
+            className="btn-close"
+            onClick={() =>
+              setShowPreview(
+                false
+              )
+            }
+          />
+        </div>
+
+        <div
+          className="modal-body"
+        >
+
+          {fileType ===
+            "pdf" && (
+            <iframe
+              src={
+                previewUrl
+              }
+              title="PDF Preview"
+              width="100%"
+              height="600px"
+            />
+          )}
+
+          {fileType ===
+            "image" && (
+            <img
+              src={
+                previewUrl
+              }
+              alt="Preview"
+              className="img-fluid"
+            />
+          )}
+
+          {fileType ===
+            "unsupported" && (
+            <div
+              className="alert alert-warning"
+            >
+              Preview is not
+              supported for
+              this file type.
+            </div>
+          )}
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }
