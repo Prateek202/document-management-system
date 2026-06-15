@@ -5,11 +5,9 @@ import { useDispatch } from "react-redux";
 import { setToken } from "../store/authSlice";
 
 function OtpVerification() {
-
   const [otp, setOtp] = useState("");
 
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
 
   const mobile = localStorage.getItem("mobile");
@@ -22,6 +20,8 @@ function OtpVerification() {
         mobile,
         otp
       );
+
+      console.log("OTP Response:", response);
 
       const token =
         response.token ||
@@ -39,15 +39,12 @@ function OtpVerification() {
 
   return (
     <div className="container mt-5">
-
       <div className="card p-4 shadow">
-
         <h2 className="text-center mb-4">
           Verify OTP
         </h2>
 
         <form onSubmit={handleVerifyOtp}>
-
           <input
             type="text"
             className="form-control mb-3"
@@ -60,11 +57,8 @@ function OtpVerification() {
           <button className="btn btn-success w-100">
             Verify OTP
           </button>
-
         </form>
-
       </div>
-
     </div>
   );
 }
